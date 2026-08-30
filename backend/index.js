@@ -1,7 +1,7 @@
 // Load environment variables before importing the application
 import "dotenv/config";
 
-import app from "./src/app.js";
+import app from "./app.js";
 import pool from "./src/config/database.js";
 
 const PORT = process.env.PORT || 4000;
