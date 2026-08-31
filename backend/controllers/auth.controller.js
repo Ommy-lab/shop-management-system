@@ -188,3 +188,78 @@ export const login = async (req, res) => {
     });
     }
 };
+
+/*
+|--------------------------------------------------------------------------
+| GET CURRENT LOGGED-IN USER
+|--------------------------------------------------------------------------
+| Returns the currently authenticated user's information.
+|
+| React will use this endpoint after login or page refresh to know:
+| - who is logged in
+| - their role
+| - their assigned truck, if any
+|--------------------------------------------------------------------------
+*/
+export const getCurrentUser = async (req, res) => {
+    try {
+        const result = await pool.query(
+        `
+        SELECT
+            u.id,
+            u.name,
+            u.email,
+            u.phone,
+            u.role,
+            u.status,
+            u.truck_id,
+
+            -- Truck details will be null for users without a truck.
+            t.name AS truck_name,
+            t.registration_number
+
+        FROM users u
+
+        LEFT JOIN trucks t
+            ON t.id = u.truck_id
+
+        WHERE u.id = $1
+        `,
+        [req.user.userId]
+    );
+
+    // If the user no longer exists.
+    if (result.rows.length === 0) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found",
+        });
+    }
+
+    const user = result.rows[0];
+
+    // Prevent an inactive user from continuing to use the system.
+    if (user.status !== "ACTIVE") {
+        return res.status(403).json({
+            success: false,
+            message: "This account is inactive",
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        user,
+    });
+
+    } catch (error) {
+        console.error(
+        "Get current user error:",
+        error
+    );
+
+    return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        });
+    }
+};

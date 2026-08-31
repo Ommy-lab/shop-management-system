@@ -4,6 +4,10 @@ import express from "express";
 
 import {
     createUser,
+    getAllUsers,
+    updateUser,
+    resetUserPassword,
+    assignSalespersonToTruck
 } from "../controllers/user.controller.js";
 
 import {
@@ -27,12 +31,44 @@ const router = express.Router();
 |--------------------------------------------------------------------------
 */
 
+// Only SUPER_ADMIN can view all system users.
+router.get(
+    "/",
+    authenticateUser,
+    allowRoles("SUPER_ADMIN"),
+    getAllUsers
+);
+
 // Only SUPER_ADMIN can create system users.
 router.post(
     "/",
     authenticateUser,
     allowRoles("SUPER_ADMIN"),
-    createUser
+    createUser,
+);
+
+// Reset another user's password.
+router.put(
+    "/:id/reset-password",
+    authenticateUser,
+    allowRoles("SUPER_ADMIN"),
+    resetUserPassword
+);
+
+// Assign salesperson to truck
+router.put(
+    "/:id/assign-truck",
+    authenticateUser,
+    allowRoles("SUPER_ADMIN"),
+    assignSalespersonToTruck
+);
+
+// Edit user.
+router.put(
+    "/:id",
+    authenticateUser,
+    allowRoles("SUPER_ADMIN"),
+    updateUser
 );
 
 export default router;
