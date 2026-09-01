@@ -3,15 +3,15 @@ import axios from 'axios';
 const TOKEN_KEY = 'shop_auth_token';
 
 const api = axios.create({
-  // Keep the backend URL outside React components so it can be changed per environment.
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api',
+    // Keep the backend URL outside React components so it can be changed per environment.
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
     headers: {
         'Content-Type': 'application/json',
     },
-});
+    });
 
-// Attach the current JWT to every authenticated API request.
-api.interceptors.request.use(
+    // Attach the current JWT to every authenticated API request.
+    api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem(TOKEN_KEY);
 
@@ -31,6 +31,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
         localStorage.removeItem(TOKEN_KEY);
+        window.dispatchEvent(new Event('shop-auth-expired'));
         }
 
         return Promise.reject(error);
@@ -43,8 +44,8 @@ export const authApi = {
 };
 
 export const dashboardApi = {
-    // Pass the exact backend dashboard endpoint when its route is connected.
-    // Keeping this adapter here prevents API URLs from being scattered through pages.
+  // Pass the exact backend dashboard endpoint when its route is connected.
+  // Keeping this adapter here prevents API URLs from being scattered through pages.
     get: (endpoint) => api.get(endpoint),
 };
 

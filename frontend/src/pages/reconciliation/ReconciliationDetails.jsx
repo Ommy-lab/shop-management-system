@@ -1,0 +1,1 @@
+import ResourceDetails from'../../components/common/ResourceDetails';import{reconciliationService}from'../../services/reconciliationService';export default function ReconciliationDetails(){return <ResourceDetails title="Reconciliation" service={{get:reconciliationService.adminGet}} path="/reconciliation"/>}

@@ -1,0 +1,1 @@
+import ResourcePage from '../../components/common/ResourcePage';import service from '../../services/truckService';export default function Trucks(){return <ResourcePage title="Trucks" description="Manage trucks." service={service} fields={['registration_number', 'description', 'status']} createPath="/trucks" singular="Truck"/>}

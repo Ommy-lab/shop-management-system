@@ -1,0 +1,1 @@
+import ResourceDetails from '../../components/common/ResourceDetails';import service from '../../services/saleService';export default function SaleDetails(){return <ResourceDetails title="Sale" service={service} path="/sales"/>}

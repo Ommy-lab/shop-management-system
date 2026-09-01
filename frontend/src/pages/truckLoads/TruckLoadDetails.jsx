@@ -1,0 +1,1 @@
+import ResourceDetails from '../../components/common/ResourceDetails';import{truckLoadService}from'../../services/truckLoadService';export default function TruckLoadDetails(){return <ResourceDetails title="Truck Load" service={truckLoadService} path="/truck-loads"/>}
