@@ -335,6 +335,17 @@ export const getTruckInventory = async (req, res) => {
     try {
         const { truckId } = req.params;
 
+        // Salespersons may only view the inventory of their assigned truck.
+        if (
+            req.user.role === "SALESPERSON" &&
+            Number(truckId) !== Number(req.user.truckId)
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "You can only view your assigned truck inventory",
+            });
+        }
+
         const truckResult = await pool.query(
         `
         SELECT id, name, registration_number, status

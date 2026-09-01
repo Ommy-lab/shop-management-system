@@ -340,10 +340,12 @@ export const closeTruckDay = async (req, res) => {
             ON tsei.event_id = tse.id
 
         WHERE tse.truck_id = $1
-            AND tse.event_date = $2
+            AND tse.created_by = $2
+            AND tse.event_date = $3
         `,
         [
             req.user.truckId,
+            req.user.userId,
             closingDate,
         ]
     );

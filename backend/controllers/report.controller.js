@@ -600,4 +600,210 @@ export const getBestSellingProducts = async (req, res) => {
         message: "Internal server error",
         });
     }
-    };
+};
+
+/*
+|--------------------------------------------------------------------------
+| PROFIT / LOSS REPORT
+|--------------------------------------------------------------------------
+| Revenue
+| - Cost of Goods Sold
+| = Gross Profit
+|
+| Gross Profit
+| - Expenses
+| - Damaged/Lost/Expired stock
+| = Net Profit / Loss
+|--------------------------------------------------------------------------
+*/
+export const getProfitLossReport = async (req, res) => {
+    try {
+        const {
+            start_date,
+            end_date,
+        } = req.query;
+
+        /*
+        |--------------------------------------------------------------------------
+        | SALES REVENUE + COST OF GOODS SOLD
+        |--------------------------------------------------------------------------
+        */
+        const salesResult = await pool.query(
+            `
+            SELECT
+                COALESCE(
+                    SUM(si.subtotal),
+                    0
+                ) AS revenue,
+
+                COALESCE(
+                    SUM(si.cost_subtotal),
+                    0
+                ) AS cost_of_goods_sold
+
+            FROM sale_items si
+
+            JOIN sales s
+                ON s.id = si.sale_id
+
+            WHERE s.sale_date BETWEEN
+                COALESCE($1::date, CURRENT_DATE)
+                AND
+                COALESCE($2::date, CURRENT_DATE)
+            `,
+            [
+                start_date || null,
+                end_date || null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | TRUCK EXPENSES
+        |--------------------------------------------------------------------------
+        */
+        const expenseResult = await pool.query(
+            `
+            SELECT
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS total_expenses
+
+            FROM truck_expenses
+
+            WHERE expense_date BETWEEN
+                COALESCE($1::date, CURRENT_DATE)
+                AND
+                COALESCE($2::date, CURRENT_DATE)
+            `,
+            [
+                start_date || null,
+                end_date || null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | STOCK LOSSES
+        |--------------------------------------------------------------------------
+        | RETURN is excluded because returned goods go back to store stock.
+        |--------------------------------------------------------------------------
+        */
+        const stockLossResult = await pool.query(
+            `
+            SELECT
+                COALESCE(
+                    SUM(tsei.cost_subtotal),
+                    0
+                ) AS inventory_loss
+
+            FROM truck_stock_events tse
+
+            JOIN truck_stock_event_items tsei
+                ON tsei.event_id = tse.id
+
+            WHERE tse.event_type IN (
+                'DAMAGED',
+                'LOST',
+                'EXPIRED'
+            )
+
+            AND tse.event_date BETWEEN
+                COALESCE($1::date, CURRENT_DATE)
+                AND
+                COALESCE($2::date, CURRENT_DATE)
+            `,
+            [
+                start_date || null,
+                end_date || null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONVERT POSTGRES NUMERIC VALUES
+        |--------------------------------------------------------------------------
+        */
+        const revenue =
+            Number(salesResult.rows[0].revenue);
+
+        const costOfGoodsSold =
+            Number(
+                salesResult.rows[0].cost_of_goods_sold
+            );
+
+        const totalExpenses =
+            Number(
+                expenseResult.rows[0].total_expenses
+            );
+
+        const inventoryLoss =
+            Number(
+                stockLossResult.rows[0].inventory_loss
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | PROFIT CALCULATIONS
+        |--------------------------------------------------------------------------
+        */
+        const grossProfit =
+            revenue - costOfGoodsSold;
+
+        const netProfit =
+            grossProfit
+            - totalExpenses
+            - inventoryLoss;
+
+        return res.status(200).json({
+            success: true,
+
+            period: {
+                start_date:
+                    start_date || "TODAY",
+
+                end_date:
+                    end_date || "TODAY",
+            },
+
+            report: {
+                revenue:
+                    revenue.toFixed(2),
+
+                cost_of_goods_sold:
+                    costOfGoodsSold.toFixed(2),
+
+                gross_profit:
+                    grossProfit.toFixed(2),
+
+                operating_expenses:
+                    totalExpenses.toFixed(2),
+
+                inventory_loss:
+                    inventoryLoss.toFixed(2),
+
+                net_profit:
+                    netProfit.toFixed(2),
+
+                result:
+                    netProfit > 0
+                        ? "PROFIT"
+                        : netProfit < 0
+                        ? "LOSS"
+                        : "BREAK_EVEN",
+            },
+        });
+
+    } catch (error) {
+        console.error(
+            "Profit/loss report error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

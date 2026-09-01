@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 
+// Import routes
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.routes.js";
 import productRoutes from "./routes/product.routes.js";
@@ -20,15 +21,60 @@ import reconciliationRoutes from "./routes/reconciliation.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import reportRoutes from "./routes/report.routes.js";
 
+// Import global error handlers
+import {
+    notFoundHandler,
+    globalErrorHandler,
+} from "./middleware/error.middleware.js";
+
 const app = express();
 
-// Allow requests from the frontend
-app.use(cors());
+/*
+|--------------------------------------------------------------------------
+| GLOBAL MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
 
-// Allow the API to receive JSON request bodies
+// Allowed frontend origin.
+// During development, Vite usually runs on http://localhost:5173
+const allowedOrigin =
+    process.env.FRONTEND_URL || "http://localhost:5173";
+
+// Configure CORS so only the frontend can call the API.
+app.use(
+    cors({
+        origin: allowedOrigin,
+
+        // Allow cookies/authorization headers if needed later.
+        credentials: true,
+
+        // Common HTTP methods used by our REST API.
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS",
+        ],
+
+        // Headers commonly sent by React/API clients.
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+        ],
+    })
+);
+
+// Allow API to receive JSON bodies
 app.use(express.json());
 
-// Simple route for testing the backend
+/*
+|--------------------------------------------------------------------------
+| TEST ROUTE
+|--------------------------------------------------------------------------
+*/
+
 app.get("/", (req, res) => {
     res.json({
         success: true,
@@ -36,56 +82,79 @@ app.get("/", (req, res) => {
     });
 });
 
+/*
+|--------------------------------------------------------------------------
+| API ROUTES
+|--------------------------------------------------------------------------
+*/
+
 // Authentication routes
 app.use("/api/auth", authRoutes);
 
-//Protected user management routes.
+// User management
 app.use("/api/users", userRoutes);
 
-// Products API route
+// Products
 app.use("/api/products", productRoutes);
 
-// Supplier API routes
+// Suppliers
 app.use("/api/suppliers", supplierRoutes);
 
-// Trucks API routes
+// Trucks
 app.use("/api/trucks", truckRoutes);
 
-// Purchase API routes
+// Purchases
 app.use("/api/purchases", purchaseRoutes);
 
-// Inventory and stock movements API
+// Store inventory
 app.use("/api/inventory", inventoryRoutes);
 
-// Truckloads and products released API
-app.use("/api/truck-loads", truckLoadRoutes)
+// Truck loading
+app.use("/api/truck-loads", truckLoadRoutes);
 
-// Customer API's only seen by salesperson
+// Customers
 app.use("/api/customers", customerRoutes);
 
-// Sales route
+// Sales
 app.use("/api/sales", saleRoutes);
 
-// Modes of payment API
+// Payments
 app.use("/api/payments", paymentRoutes);
 
-// Debts collections API
+// Debts
 app.use("/api/debts", debtRoutes);
 
-// Trucks returned to stocks API
+// Truck stock events
 app.use("/api/truck-stock-events", truckStockEventRoutes);
 
-// Truck expenses routes API
+// Expenses
 app.use("/api/expenses", expenseRoutes);
 
-// Truck reconciliation API
+// Reconciliation
 app.use("/api/reconciliations", reconciliationRoutes);
 
-// Dasboards routes API
+// Dashboards
 app.use("/api/dashboard", dashboardRoutes);
 
-//Business reports routes
+// Reports
 app.use("/api/reports", reportRoutes);
 
+/*
+|--------------------------------------------------------------------------
+| 404 HANDLER
+|--------------------------------------------------------------------------
+| Must be AFTER every valid route.
+|--------------------------------------------------------------------------
+*/
+app.use(notFoundHandler);
+
+/*
+|--------------------------------------------------------------------------
+| GLOBAL ERROR HANDLER
+|--------------------------------------------------------------------------
+| Must always be the LAST middleware.
+|--------------------------------------------------------------------------
+*/
+app.use(globalErrorHandler);
 
 export default app;

@@ -111,6 +111,7 @@ export const createSale = async (req, res) => {
             SELECT
             ti.quantity,
             p.name,
+            p.buying_price,
             p.selling_price
 
             FROM truck_inventory ti
@@ -140,7 +141,13 @@ export const createSale = async (req, res) => {
 
     const availableQuantity = Number(stock.quantity);
     const requestedQuantity = Number(item.quantity);
+
+    // Price charged to the customer
     const sellingPrice = Number(stock.selling_price);
+
+    // Snapshot the current product buying price.
+    // This becomes the historical cost of this sale
+    const costPrice = Number(stock.buying_price);
 
         if (availableQuantity < requestedQuantity) {
             await client.query("ROLLBACK");
@@ -153,15 +160,25 @@ export const createSale = async (req, res) => {
             });
         }
 
-      const subtotal = requestedQuantity * sellingPrice;
+        // Total revenue from this item.
+        const costSubtotal = requestedQuantity * costPrice;
 
-    totalAmount += subtotal;
+        // Revenue ganerated by selling this quantity
+        const subtotal = requestedQuantity * sellingPrice;
+
+        totalAmount += subtotal;
 
     validatedItems.push({
         product_id: item.product_id,
         quantity: requestedQuantity,
+
+        // Selling information.
         selling_price: sellingPrice,
         subtotal,
+
+        // Historical cost information.
+        cost_price: costPrice,
+        cost_subtotal: costSubtotal,
     });
 }
 
@@ -219,9 +236,11 @@ const saleResult = await client.query(
             product_id,
             quantity,
             selling_price,
-            subtotal
+            subtotal,
+            cost_price,
+            cost_subtotal
             )
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             `,
             [
             sale.id,
@@ -229,6 +248,8 @@ const saleResult = await client.query(
             item.quantity,
             item.selling_price,
             item.subtotal,
+            item.cost_price,
+            item.cost_subtotal,
             ]
         );
 

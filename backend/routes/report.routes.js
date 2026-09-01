@@ -11,6 +11,7 @@ import {
     getDebtReport,
     getStockEventReport,
     getBestSellingProducts,
+    getProfitLossReport,
 } from "../controllers/report.controller.js";
 
 import {
@@ -87,6 +88,13 @@ router.get(
     authenticateUser,
     allowRoles("SUPER_ADMIN", "ADMIN"),
     getBestSellingProducts
+);
+
+router.get(
+    "/profit-loss",
+    authenticateUser,
+    allowRoles("SUPER_ADMIN", "ADMIN"),
+    getProfitLossReport
 );
 
 export default router;
