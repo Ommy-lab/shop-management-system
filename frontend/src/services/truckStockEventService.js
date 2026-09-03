@@ -1,5 +1,2 @@
 import api from './api';
-import { createResourceService } from './resourceService';
-const base = createResourceService('/truck-stock-events');
-export const truckStockEventService = { ...base, listMine: () => api.get('/truck-stock-events/my-events') };
-export default truckStockEventService;
+export default { list: () => api.get('/truck-stock-events/my-events'), get: (id) => api.get(`/truck-stock-events/${id}`), create: (data) => api.post('/truck-stock-events', data) };

@@ -1,12 +1,9 @@
-export const ROLES = {
-    SUPER_ADMIN: 'SUPER_ADMIN',
-    ADMIN: 'ADMIN',
-    STOREKEEPER: 'STOREKEEPER',
-    SALESPERSON: 'SALESPERSON',
+export const ROLES = Object.freeze({ SUPER_ADMIN: 'SUPER_ADMIN', ADMIN: 'ADMIN', STOREKEEPER: 'STOREKEEPER', SALESPERSON: 'SALESPERSON' });
+
+export const DASHBOARD_BY_ROLE = {
+  [ROLES.SUPER_ADMIN]: '/dashboard', [ROLES.ADMIN]: '/dashboard', [ROLES.STOREKEEPER]: '/dashboard', [ROLES.SALESPERSON]: '/dashboard',
 };
 
-export function getDashboardPath(role) {
-  // Keeping one dashboard route lets the page render role-specific content
-  // without duplicating the application shell.
-    return '/dashboard';
-}
+export const MANAGEMENT_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
+export const STOCK_ROLES = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STOREKEEPER];
+export const ALL_ROLES = Object.values(ROLES);

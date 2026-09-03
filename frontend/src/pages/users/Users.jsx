@@ -1,15 +1,55 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../components/common/PageHeader';
-import DataTable from '../../components/common/DataTable';
+import EntityList from '../../components/common/EntityList';
 import StatusBadge from '../../components/common/StatusBadge';
-import ErrorMessage from '../../components/common/ErrorMessage';
-import { userService } from '../../services/userService';
-import { asArray, getApiMessage } from '../../utils/data';
+import userService from '../../services/userService';
 
 export default function Users() {
-  const [users,setUsers]=useState([]);const[loading,setLoading]=useState(true);const[error,setError]=useState('');const nav=useNavigate();
-  const load=async()=>{setLoading(true);try{setUsers(asArray((await userService.list()).data))}catch(e){setError(getApiMessage(e))}finally{setLoading(false)}};useEffect(()=>{load()},[]);
-  const columns=[{key:'id',label:'ID'},{key:'name',label:'Name'},{key:'email',label:'Email'},{key:'role',label:'Role'},{key:'status',label:'Status',render:r=><StatusBadge value={r.status}/>},{key:'truck_id',label:'Truck'},{key:'actions',label:'Actions',render:r=>{const protectedUser=r.role==='SUPER_ADMIN';return <div className="row-actions"><button className="btn btn--ghost btn--sm" onClick={()=>nav(`/admin/users/${r.id}`)}>View</button>{!protectedUser&&<button className="btn btn--ghost btn--sm" onClick={()=>nav(`/admin/users/${r.id}/edit`)}>Edit</button>} {!protectedUser&&<><button className="btn btn--ghost btn--sm" onClick={()=>nav(`/admin/users/${r.id}/reset-password`)}>Reset Password</button><button className="btn btn--ghost btn--sm" onClick={()=>nav(`/admin/users/${r.id}/assign-truck`)}>Assign Truck</button></>}</div>}}];
-  return <><PageHeader title="Users" description="Manage users without exposing the protected SUPER_ADMIN account." action={<button className="btn btn--primary" onClick={()=>nav('/admin/users/new')}>+ Add User</button>}/>{error&&<ErrorMessage message={error} onRetry={load}/>}<DataTable rows={users} loading={loading} columns={columns}/></>;
+  return (
+    <EntityList
+      title="Users"
+      eyebrow="Super admin control"
+      description="Create staff accounts, manage roles, and assign salespeople to trucks."
+      service={userService}
+      dataKey="users"
+      searchFields={['name', 'email', 'phone', 'role']}
+      addTo="/admin/users/new"
+      detailBase="/admin/users"
+      columns={[
+        {
+          key: 'name',
+          label: 'Name',
+        },
+        {
+          key: 'email',
+          label: 'Email',
+        },
+        {
+          key: 'phone',
+          label: 'Phone',
+        },
+        {
+          key: 'role',
+          label: 'Role',
+          render: (value) => value?.replaceAll('_', ' '),
+        },
+        {
+          /*
+           * The backend returns "truck_name".
+           *
+           * Example:
+           * truck_name: "Truck 1"
+           *
+           * Do not use "assigned_truck_name" because
+           * that field does not exist in the API response.
+           */
+          key: 'truck_name',
+          label: 'Assigned truck',
+        },
+        {
+          key: 'status',
+          label: 'Status',
+          render: (value) => <StatusBadge value={value} />,
+        },
+      ]}
+    />
+  );
 }

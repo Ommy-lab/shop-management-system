@@ -1,1 +1,2 @@
-export default function ExpenseDetails(){return <div className="empty-state"><h3>Expense details</h3><p>Select an expense from an available backend response.</p></div>}
+import { Link,useParams } from 'react-router-dom'; import PageHeader from '../../components/common/PageHeader';
+export default function ExpenseDetails(){const{id}=useParams();return <><PageHeader eyebrow="Route expense" title="Expense details"/><div className="panel empty-state"><p>Expense ID: {id}</p><p>The documented backend has no single-expense endpoint, so this frontend does not invent one.</p><Link className="btn btn--outline" to="/expenses">Back to expenses</Link></div></>}

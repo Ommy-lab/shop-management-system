@@ -1,5 +1,2 @@
 import api from './api';
-import { createResourceService } from './resourceService';
-const base = createResourceService('/truck-loads');
-export const truckLoadService = { ...base, inventory: (truckId) => api.get(`/truck-loads/truck/${truckId}/inventory`) };
-export default truckLoadService;
+export default { list: () => api.get('/truck-loads'), get: (id) => api.get(`/truck-loads/${id}`), create: (data) => api.post('/truck-loads', data), inventory: (truckId) => api.get(`/truck-loads/truck/${truckId}/inventory`) };

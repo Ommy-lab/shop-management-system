@@ -1,3 +1,1 @@
-export default function SearchBar({ value, onChange, placeholder='Search...' }) {
-  return <label className="search-bar"><span className="sr-only">Search</span><input type="search" value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder}/></label>;
-}
+export default function SearchBar({ value, onChange, placeholder = 'Search records…' }) { return <label className="search-bar"><span aria-hidden="true">⌕</span><span className="sr-only">Search</span><input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}/>{value && <button type="button" aria-label="Clear search" onClick={() => onChange('')}>×</button>}</label>; }

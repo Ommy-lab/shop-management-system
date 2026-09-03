@@ -1,3 +1,3 @@
 import api from './api';
-export const dashboardService = { getSuperAdminDashboard: () => api.get('/dashboard/super-admin'), getAdminDashboard: () => api.get('/dashboard/admin'), getStorekeeperDashboard: () => api.get('/dashboard/storekeeper'), getSalespersonDashboard: () => api.get('/dashboard/salesperson') };
-export default dashboardService;
+const paths = { SUPER_ADMIN: 'super-admin', ADMIN: 'admin', STOREKEEPER: 'storekeeper', SALESPERSON: 'salesperson' };
+export default { get: (role) => api.get(`/dashboard/${paths[role]}`) };

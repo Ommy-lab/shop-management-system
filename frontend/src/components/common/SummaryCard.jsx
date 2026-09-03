@@ -1,3 +1,1 @@
-export default function SummaryCard({ title, value, tone }) {
-  return <div className={`summary-card${tone ? ` summary-card--${tone}` : ''}`}><span>{title}</span><strong>{value}</strong></div>;
-}
+export default function SummaryCard({ label, value, icon = '◆', tone = 'orange', hint }) { return <article className={`summary-card summary-card--${tone}`}><div className="summary-card__icon">{icon}</div><div><p>{label}</p><strong>{value ?? '—'}</strong>{hint && <small>{hint}</small>}</div></article>; }

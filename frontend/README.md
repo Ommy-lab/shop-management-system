@@ -1,16 +1,50 @@
-# React + Vite
+# Shop Management System Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Production-oriented React frontend for the existing Node.js, Express, and PostgreSQL Shop Management System backend.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Ensure the backend is running at `http://localhost:4000`.
+2. Copy `.env.example` to `.env` if `.env` is missing.
+3. Run `npm install`.
+4. Run `npm run dev`.
 
-## React Compiler
+The configured API root is `http://localhost:4000/api`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quality commands
 
-## Expanding the ESLint configuration
+- `npm run lint`
+- `npm run build`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Implemented role access
+
+- `SUPER_ADMIN`: dashboard, users, products, suppliers, trucks, purchases, inventory, truck loading, reconciliations, reports, and profit/loss.
+- `ADMIN`: dashboard and business management modules, excluding Super Admin user management.
+- `STOREKEEPER`: dashboard, inventory, low stock, movements, truck loading, truck inventory, and stock events.
+- `SALESPERSON`: dashboard, assigned truck inventory, private customers, sales, payments, debts, expenses, stock events, and reconciliation.
+
+Frontend route guards and role-aware navigation improve the experience; the backend remains the security authority.
+
+## API integration behavior
+
+- All requests use the shared Axios instance in `src/services/api.js`.
+- JWT is attached from local storage to authenticated requests.
+- `GET /auth/me` restores sessions after refresh.
+- A `401` clears the expired token and returns the user to sign-in.
+- No mock API or fabricated business data is included.
+- Collection responses support common envelopes such as raw arrays, `data`, `items`, `rows`, and the documented module name.
+
+## Documented endpoint gaps handled honestly
+
+The supplied API contract does not define:
+
+- a global payments list endpoint;
+- `GET /customers/:id`;
+- `GET /expenses/:id`;
+- a salesperson-specific single reconciliation details endpoint.
+
+The interface does not invent those calls. It guides users back to the supported collection or parent-sale workflow. Dashboard and report charts render only when the backend returns chartable historical rows.
+
+## Payload verification
+
+The backend source and live response samples were not included with the requirements. Before deployment, compare the form payload field names—especially dynamic `items`, price fields, assigned-truck identifiers, dashboard statistics, and reconciliation totals—with the actual controller contracts. Endpoint paths match the supplied specification exactly.

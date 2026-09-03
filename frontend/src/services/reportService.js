@@ -1,4 +1,3 @@
 import api from './api';
-const report = (path, params) => api.get(path, { params });
-export const reportService = { salesSummary: (params) => report('/reports/sales', params), purchaseSummary: (params) => report('/reports/purchases', params), expenseSummary: (params) => report('/reports/expenses', params), debt: (params) => report('/reports/debts', params), profitLoss: (params) => report('/reports/profit-loss', params), bestSellingProducts: (params) => report('/reports/best-selling-products', params), stockEvents: (params) => report('/reports/stock-events', params) };
-export default reportService;
+const get = (path, params) => api.get(`/reports/${path}`, { params });
+export default { salesSummary: (p) => get('sales/summary', p), salesByTruck: (p) => get('sales/by-truck', p), salesByProduct: (p) => get('sales/by-product', p), purchases: (p) => get('purchases', p), expenses: (p) => get('expenses', p), debts: (p) => get('debts', p), stockEvents: (p) => get('stock-events', p), bestSelling: (p) => get('best-selling-products', p), profitLoss: (p) => get('profit-loss', p) };

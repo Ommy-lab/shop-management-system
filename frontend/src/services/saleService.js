@@ -1,5 +1,2 @@
 import api from './api';
-import { createResourceService } from './resourceService';
-const base = createResourceService('/sales');
-export const saleService = { ...base, listMine: () => api.get('/sales/my-sales') };
-export default saleService;
+export default { list: () => api.get('/sales/my-sales'), get: (id) => api.get(`/sales/${id}`), create: (data) => api.post('/sales', data) };

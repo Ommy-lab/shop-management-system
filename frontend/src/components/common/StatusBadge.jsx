@@ -1,4 +1,1 @@
-export default function StatusBadge({ value }) {
-  const normalized = String(value ?? 'UNKNOWN').toUpperCase();
-  return <span className={`status-badge status-badge--${normalized.toLowerCase().replaceAll('_','-')}`}>{normalized.replaceAll('_',' ')}</span>;
-}
+export default function StatusBadge({ value = 'UNKNOWN' }) { const status = String(value).toUpperCase(); const tone = ['ACTIVE','PAID','APPROVED','COMPLETED'].includes(status) ? 'success' : ['PENDING','PARTIAL','LOW_STOCK'].includes(status) ? 'warning' : ['INACTIVE','UNPAID','REJECTED','DAMAGED','LOST','EXPIRED'].includes(status) ? 'danger' : 'neutral'; return <span className={`badge badge--${tone}`}><i />{status.replaceAll('_', ' ')}</span>; }

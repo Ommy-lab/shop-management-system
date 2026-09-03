@@ -1,1 +1,50 @@
-import ModuleList from '../../components/common/ModuleList';import service from '../../services/expenseService';export default function Expenses(){return <ModuleList title="Expenses" description="Your expense history." loader={service.mine} columns={[{key:'id',label:'ID'},{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'description',label:'Description'},{key:'expense_date',label:'Expense Date'}]}/>;}
+import EntityList from '../../components/common/EntityList';
+import expenseService from '../../services/expenseService';
+import { money, shortDate } from '../../utils/data';
+
+export default function Expenses() {
+  return (
+    <EntityList
+      title="Expenses"
+      eyebrow="Route costs"
+      description="Record and review expenses for the authenticated salesperson."
+
+      service={expenseService}
+
+      // Backend response:
+      // { success: true, count: 2, expenses: [...] }
+      dataKey="expenses"
+
+      // These fields exist in the backend response.
+      searchFields={['category', 'description']}
+
+      addTo="/expenses/new"
+      detailBase="/expenses"
+
+      columns={[
+        // Backend uses expense_date, not date.
+        {
+          key: 'expense_date',
+          label: 'Date',
+          render: shortDate,
+        },
+
+        {
+          key: 'category',
+          label: 'Category',
+        },
+
+        {
+          key: 'description',
+          label: 'Description',
+        },
+
+        {
+          key: 'amount',
+          label: 'Amount',
+          render: money,
+        },
+      ]}
+    />
+  );
+}

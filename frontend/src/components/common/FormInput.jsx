@@ -1,3 +1,1 @@
-export default function FormInput({ label, name, value, onChange, type='text', required=false, min, max, step, placeholder }) {
-  return <label className="form-field"><span>{label}{required && ' *'}</span><input name={name} type={type} value={value ?? ''} onChange={onChange} required={required} min={min} max={max} step={step} placeholder={placeholder}/></label>;
-}
+export default function FormInput({ label, error, required, ...props }) { return <label className="field"><span>{label}{required && <b> *</b>}</span><input {...props} required={required}/>{error && <small className="field__error">{error}</small>}</label>; }

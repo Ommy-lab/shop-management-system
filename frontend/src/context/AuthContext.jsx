@@ -1,122 +1,37 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { authApi, TOKEN_KEY } from '../services/api';
+import authService from '../services/authService';
+import { unwrap } from '../utils/data';
 
 const AuthContext = createContext(null);
 
-function getStoredToken() {
-    return localStorage.getItem(TOKEN_KEY);
-    }
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(Boolean(localStorage.getItem('token')));
 
-    export function AuthProvider({ children }) {
-    const [token, setToken] = useState(getStoredToken);
-    const [user, setUser] = useState(null);
-    const [isInitializing, setIsInitializing] = useState(Boolean(getStoredToken()));
-    const [authError, setAuthError] = useState('');
+  const logout = useCallback(() => { localStorage.removeItem('token'); setUser(null); }, []);
 
-    // Restore the user from the backend whenever a JWT exists after a page refresh.
-    const restoreSession = useCallback(async () => {
-        const storedToken = getStoredToken();
+  // Restore the authenticated user after refresh; backend authorization stays authoritative.
+  const loadCurrentUser = useCallback(async () => {
+    if (!localStorage.getItem('token')) { setLoading(false); return; }
+    try { setUser(unwrap(await authService.me(), 'user')); } catch { logout(); } finally { setLoading(false); }
+  }, [logout]);
 
-    if (!storedToken) {
-        setUser(null);
-        setToken(null);
-        setIsInitializing(false);
-        return;
-        }
+  useEffect(() => { loadCurrentUser(); }, [loadCurrentUser]);
+  useEffect(() => { window.addEventListener('auth:expired', logout); return () => window.removeEventListener('auth:expired', logout); }, [logout]);
 
-        setIsInitializing(true);
+  const login = async (credentials) => {
+    const response = await authService.login(credentials);
+    const payload = unwrap(response);
+    const token = payload.token || payload.accessToken || payload.access_token;
+    if (!token) throw new Error('The server did not return an authentication token.');
+    localStorage.setItem('token', token);
+    const current = unwrap(await authService.me(), 'user');
+    setUser(current);
+    return current;
+  };
 
-    try {
-        const response = await authApi.me();
-        setUser(response.data.user ?? response.data);
-        setToken(storedToken);
-    } catch {
-        // Invalid/expired tokens are removed so protected routes cannot remain accessible.
-        localStorage.removeItem(TOKEN_KEY);
-        setToken(null);
-        setUser(null);
-    } finally {
-        setIsInitializing(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        restoreSession();
-    }, [restoreSession]);
-
-    const login = useCallback(async (credentials) => {
-        setAuthError('');
-
-        try {
-        const response = await authApi.login(credentials);
-        const receivedToken = response.data.token;
-        const receivedUser = response.data.user;
-
-        if (!receivedToken || !receivedUser) {
-            throw new Error('The login response did not contain a token and user.');
-        }
-
-        localStorage.setItem(TOKEN_KEY, receivedToken);
-        setToken(receivedToken);
-        setUser(receivedUser);
-
-        return receivedUser;
-        } catch (error) {
-        const message =
-            error.response?.data?.message ||
-            error.response?.data?.error ||
-            error.message ||
-            'Unable to sign in. Please check your credentials.';
-
-        setAuthError(message);
-        throw error;
-        }
-    }, []);
-
-    const logout = useCallback(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        setToken(null);
-        setUser(null);
-        setAuthError('');
-    }, []);
-
-    const clearAuthError = useCallback(() => {
-        setAuthError('');
-    }, []);
-
-    const value = useMemo(
-        () => ({
-        token,
-        user,
-        isAuthenticated: Boolean(token && user),
-        isInitializing,
-        authError,
-        login,
-        logout,
-        clearAuthError,
-        restoreSession,
-    }),
-    [
-        token,
-        user,
-        isInitializing,
-        authError,
-        login,
-        logout,
-        clearAuthError,
-        restoreSession,
-        ]
-    );
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const value = useMemo(() => ({ user, loading, login, logout, refreshUser: loadCurrentUser, isAuthenticated: Boolean(user) }), [user, loading, logout, loadCurrentUser]);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-    const context = useContext(AuthContext);
-
-    if (!context) {
-        throw new Error('useAuth must be used inside an AuthProvider');
-    }
-
-    return context;
-}
+export const useAuth = () => useContext(AuthContext);

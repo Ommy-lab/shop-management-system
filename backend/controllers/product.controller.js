@@ -78,7 +78,7 @@ export const createProduct = async (req, res) => {
         message: "Internal server error",
         });
     }
-    };
+};
 
 
     /*
@@ -258,4 +258,4 @@ export const deleteProduct = async (req, res) => {
         message: "Internal server error",
         });
     }
-    };
+};

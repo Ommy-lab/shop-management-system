@@ -1,1 +1,1 @@
-import StoreInventory from './StoreInventory';export default StoreInventory;
+export { default } from './StoreInventory';

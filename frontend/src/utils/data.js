@@ -1,25 +1,24 @@
-export function asArray(value) {
+export const unwrap = (response, preferredKey) => {
+  const body = response?.data ?? response ?? {};
+  const payload = body.data ?? body;
+  if (preferredKey && payload?.[preferredKey] !== undefined) return payload[preferredKey];
+  return payload;
+};
+
+export const asList = (response, preferredKey) => {
+  const value = unwrap(response, preferredKey);
   if (Array.isArray(value)) return value;
-  if (Array.isArray(value?.data)) return value.data;
-  if (Array.isArray(value?.items)) return value.items;
-  if (Array.isArray(value?.rows)) return value.rows;
+  for (const key of ['items', 'rows', 'results', 'records', preferredKey]) if (Array.isArray(value?.[key])) return value[key];
   return [];
-}
+};
 
-export function asObject(value) {
-  if (value && typeof value === 'object' && !Array.isArray(value)) return value.data && typeof value.data === 'object' && !Array.isArray(value.data) ? value.data : value;
-  return {};
-}
-
-export function getApiMessage(error, fallback='Request failed. Please try again.') {
+export const errorMessage = (error, fallback = 'Something went wrong. Please try again.') => {
+  if (error?.response?.status === 403) return 'You do not have permission to perform this action.';
+  if (error?.response?.status === 404) return 'The requested record was not found.';
+  if (error?.response?.status >= 500) return 'The server could not complete the request. Please try again.';
   return error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
-}
+};
 
-export function money(value) {
-  if (value === null || value === undefined || value === '') return '—';
-  const number = Number(value);
-  if (Number.isNaN(number)) return String(value);
-  return new Intl.NumberFormat('en-TZ', { style:'currency', currency:'TZS', maximumFractionDigits:2 }).format(number);
-}
-
-export function displayName(user) { return user?.name || user?.full_name || user?.email || 'User'; }
+export const money = (value) => new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', maximumFractionDigits: 0 }).format(Number(value || 0));
+export const shortDate = (value) => value ? new Intl.DateTimeFormat('en-TZ', { dateStyle: 'medium' }).format(new Date(value)) : '—';
+export const today = () => new Date().toISOString().slice(0, 10);

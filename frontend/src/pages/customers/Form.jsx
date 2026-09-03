@@ -1,0 +1,3 @@
+import EntityForm from '../../components/common/EntityForm'; import customerService from '../../services/customerService';
+const service={...customerService,get:async()=>({data:{}})};const fields=[{name:'name',label:'Customer name',required:true},{name:'business_name',label:'Business name'},{name:'phone',label:'Phone',type:'tel',required:true},{name:'location',label:'Location',required:true},{name:'status',label:'Status',type:'select',options:[{value:'ACTIVE',label:'Active'},{value:'INACTIVE',label:'Inactive'}]}];
+export default function CustomerForm(){return <EntityForm title="Customer" service={service} fields={fields} backTo="/customers" initial={{status:'ACTIVE'}}/>}

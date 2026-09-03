@@ -1,3 +1,1 @@
-export default function ErrorMessage({ message, onRetry }) {
-  return <div className="error-message" role="alert"><span>{message || 'Something went wrong.'}</span>{onRetry && <button type="button" className="btn btn--secondary btn--sm" onClick={onRetry}>Retry</button>}</div>;
-}
+export default function ErrorMessage({ message, onRetry }) { if (!message) return null; return <div className="alert alert--error" role="alert"><span>⚠</span><div><strong>Unable to complete this request</strong><p>{message}</p>{onRetry && <button className="btn btn--small btn--outline" onClick={onRetry}>Try again</button>}</div></div>; }

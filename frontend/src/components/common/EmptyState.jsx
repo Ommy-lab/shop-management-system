@@ -1,0 +1,1 @@
+export default function EmptyState({ title = 'No records found', description = 'There is nothing to display yet.', action }) { return <div className="empty-state"><div className="empty-state__icon">◇</div><h3>{title}</h3><p>{description}</p>{action}</div>; }

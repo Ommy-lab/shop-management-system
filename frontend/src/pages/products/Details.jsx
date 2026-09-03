@@ -1,1 +1,3 @@
-import ResourceDetails from '../../components/common/ResourceDetails';import service from '../../services/productService';export default function Details(){return <ResourceDetails title="Product" service={service} path="/products"/>}
+import RecordDetails from '../../components/common/RecordDetails'; import productService from '../../services/productService'; import { money } from '../../utils/data';
+const fields=[{key:'name',label:'Name'},{key:'sku',label:'SKU'},{key:'unit',label:'Unit'},{key:'buying_price',label:'Buying price',render:money},{key:'selling_price',label:'Selling price',render:money},{key:'minimum_stock',label:'Minimum stock'},{key:'status',label:'Status'},{key:'description',label:'Description'}];
+export default function ProductDetails(){return <RecordDetails title="Product" service={productService} fields={fields} backTo="/products" editTo="/products/:id/edit" dataKey="product"/>}

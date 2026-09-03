@@ -1,1 +1,2 @@
-import ResourceDetails from '../../components/common/ResourceDetails';import service from '../../services/supplierService';export default function Details(){return <ResourceDetails title="Supplier" service={service} path="/suppliers"/>}
+import RecordDetails from '../../components/common/RecordDetails'; import supplierService from '../../services/supplierService';
+export default function SupplierDetails(){return <RecordDetails title="Supplier" service={supplierService} fields={[{key:'name',label:'Name'},{key:'phone',label:'Phone'},{key:'location',label:'Location'},{key:'status',label:'Status'}]} backTo="/suppliers" editTo="/suppliers/:id/edit" dataKey="supplier"/>}

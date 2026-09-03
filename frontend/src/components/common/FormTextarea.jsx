@@ -1,0 +1,1 @@
+export default function FormTextarea({ label, error, required, ...props }) { return <label className="field field--full"><span>{label}{required && <b> *</b>}</span><textarea {...props} required={required}/>{error && <small className="field__error">{error}</small>}</label>; }
